@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Select text editor (default to vi)
+if [ $EDITOR ]; then
+    editor=$EDITOR
+elif [ -f /usr/bin/editor ]; then
+    editor=/usr/bin/editor
+else
+    editor=vi
+fi
+
+if [[ $# = 0 || $# > 1 ]]; then
+    echo "Usage: aesvi [filename]"
+    exit 2
+else
+    filename=$1
+fi
+
+# Use shred (with -u to remove file) if available
+if [ -f `which shred` ]; then
+    rm="shred -u"
+else
+    rm=rm
+fi
+
+tmp=`mktemp` || exit 1
+
+# Don't show the password as it's being typed
+stty -echo
+read -p "Password: " passwd; echo
+stty echo
+
+if [ ! -f $filename ]; then 
+    echo "$filename doesn't exist. Starting from empty file."
+elif [ ! -w $filename ]; then
+    echo "$filename isn't writable."
+    exit 1
+else
+    # Decrypt into the tmp file
+    openssl aes-256-cbc -a -d -in $filename -out $tmp -pass pass:$passwd \
+        2> /dev/null
+    ret=$?
+    if [ $ret != 0 ]; then
+        echo "Error: decryption fail"
+        $rm $tmp
+        exit $ret;
+    fi
+fi
+
+# Encrypt the file and remove the tmp file
+$editor $tmp
+openssl aes-256-cbc -a -salt -in $tmp -out $filename -pass pass:$passwd \
+    2> /dev/null
+ret=$?
+$rm $tmp
+exit $ret

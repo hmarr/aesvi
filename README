@@ -4,15 +4,10 @@ It simply decrypts the file into a file readable only by you, you edit it in you
 
 I use this to keep track of my web passwords.
 
-Usage : 
-
-$ ./gpg-encrypt.sh 
-No filename specified. Using default passwords.gpg
-Password: 
-passwords.gpg doesn't exist. Starting from empty file.
+Usage: ./aesvi passwords.aes
 <editor pops up and you edit your file. Once you exit it saves it encrypted>
 
 To change your editor (in bash) :
 $ export EDITOR=pico
-$ ./gpg-encrypt.sh 
+$ ./aesvi passwords.aes
 <now pico pops up>
