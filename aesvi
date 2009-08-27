@@ -25,17 +25,19 @@ fi
 
 tmp=`mktemp` || exit 1
 
-# Don't show the password as it's being typed
-stty -echo
-read -p "Password: " passwd; echo
-stty echo
-
 if [ ! -f $filename ]; then 
     echo "$filename doesn't exist. Starting from empty file."
 elif [ ! -w $filename ]; then
     echo "$filename isn't writable."
     exit 1
-else
+fi
+
+# Don't show the password as it's being typed
+stty -echo
+read -p "Password: " passwd; echo
+stty echo
+
+if [ -f $filename -a -w $filename ]; then
     # Decrypt into the tmp file
     openssl aes-256-cbc -a -d -in $filename -out $tmp -pass pass:$passwd \
         2> /dev/null
